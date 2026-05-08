@@ -1,0 +1,10 @@
+[submodule "vendor/SDL_GameControllerDB"]
+	path = vendor/SDL_GameControllerDB
+	url = https://github.com/mdqinc/SDL_GameControllerDB.git
+	branch = master
+	ignore = dirty
+[submodule "retroarch-joypad-autoconfig"]
+	path = retroarch-joypad-autoconfig
+	url = https://github.com/libretro/retroarch-joypad-autoconfig.git
+	branch = master
+	ignore = dirty
