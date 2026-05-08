@@ -3,11 +3,13 @@
   "version": "0.0.1",
   "description": "Builds out retroarch-joypad-autoconfig SDL3 configs.",
   "license": "MIT",
-  "author": "",
+  "author": "Rob Loach",
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "prebuild": "git submodule update --init",
     "build": "node index.js",
+    "pretest": "npm run build",
     "test": "node --test test.js",
     "update-vendor": "git submodule update --recursive --remote --init"
   }

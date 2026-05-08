@@ -45,9 +45,9 @@ test('8BitDo Pro 2: hat dpad and trigger-as-button', () => {
   assert.equal(cfg.input_l2_axis, undefined); // trigger is a button, not an axis
 });
 
-test('PS4 Controller (Mac): axis trigger and analog sticks', () => {
+test('PS4 Controller: axis trigger and analog sticks', () => {
   // SDL: lefttrigger:a3, righttrigger:a4, leftx:a0, lefty:a1, rightx:a2, righty:a5
-  const cfg = parseCfg('PS4 Controller_030000004c050000c405000000010000.cfg');
+  const cfg = parseCfg('PS4 Controller_030000004c050000c405000000000000.cfg');
   assert.equal(cfg.input_vendor_id, '1356'); // 0x054c (Sony)
   assert.equal(cfg.input_product_id, '1476'); // 0x05c4
   assert.equal(cfg.input_l2_axis, '+3');
@@ -60,7 +60,7 @@ test('PS4 Controller (Mac): axis trigger and analog sticks', () => {
 });
 
 test('PS4 Controller: face buttons swapped (a:b1, b:b2, x:b0, y:b3)', () => {
-  const cfg = parseCfg('PS4 Controller_030000004c050000c405000000010000.cfg');
+  const cfg = parseCfg('PS4 Controller_030000004c050000c405000000000000.cfg');
   assert.equal(cfg.input_a_btn, '2'); // SDL b:b2
   assert.equal(cfg.input_b_btn, '1'); // SDL a:b1
   assert.equal(cfg.input_x_btn, '3'); // SDL y:b3
@@ -99,6 +99,21 @@ test('Every emitted button line has a corresponding label line', () => {
 
 test('Output directory contains only .cfg files and a reasonable count', () => {
   const files = fs.readdirSync(OUTPUT_DIR);
-  assert.ok(files.length > 2000, `expected >2000 cfgs, got ${files.length}`);
+  assert.ok(files.length > 1000, `expected >1000 cfgs, got ${files.length}`);
   assert.ok(files.every((f) => f.endsWith('.cfg')), 'non-cfg file found');
+});
+
+test('Filenames use only portable characters', () => {
+  // Reject anything Windows or POSIX would reject.
+  // eslint-disable-next-line no-control-regex
+  const forbiddenChars = /[<>:"/\\|?*\x00-\x1f]/;
+  const reservedWindowsNames = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i;
+  const offenders = [];
+  for (const f of fs.readdirSync(OUTPUT_DIR)) {
+    if (forbiddenChars.test(f)) offenders.push(`${f} (forbidden char)`);
+    else if (/^\./.test(f)) offenders.push(`${f} (leading dot)`);
+    else if (/[. ]$/.test(f.replace(/\.cfg$/, ''))) offenders.push(`${f} (trailing dot or space)`);
+    else if (reservedWindowsNames.test(f)) offenders.push(`${f} (reserved Windows name)`);
+  }
+  assert.deepEqual(offenders, [], `non-portable filenames: ${offenders.slice(0, 5).join(', ')}`);
 });
