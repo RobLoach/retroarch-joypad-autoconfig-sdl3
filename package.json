@@ -7,10 +7,9 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "prebuild": "git submodule update --init",
+    "prebuild": "git submodule update --recursive --remote --init",
     "build": "node index.js",
     "pretest": "npm run build",
-    "test": "node --test test.js",
-    "update-vendor": "git submodule update --recursive --remote --init"
+    "test": "node --test test.js"
   }
 }
