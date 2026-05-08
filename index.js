@@ -6,6 +6,10 @@ const path = require('path');
 const ROOT = __dirname;
 const INPUT_PATH = path.join(ROOT, 'vendor', 'SDL_GameControllerDB', 'gamecontrollerdb.txt');
 const OUTPUT_DIR = path.join(ROOT, 'retroarch-joypad-autoconfig', 'sdl3');
+const META_PATH = path.join(ROOT, 'meta.json');
+
+const META = JSON.parse(fs.readFileSync(META_PATH, 'utf8'));
+const IGNORED_PREFIXES = META.ignored || [];
 
 const HAT_DIR = { 1: 'up', 2: 'right', 4: 'down', 8: 'left' };
 
@@ -297,6 +301,7 @@ function main() {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
   let skipped = 0;
+  let ignored = 0;
   const collisions = [];
   const unmappedTally = { noEquivalent: new Map(), unhandled: new Map() };
   const seen = new Map();
@@ -313,6 +318,10 @@ function main() {
     }
     if (entry.name === '*') {
       skipped++;
+      continue;
+    }
+    if (IGNORED_PREFIXES.some((p) => trimmed.startsWith(p))) {
+      ignored++;
       continue;
     }
     const ids = parseGuid(entry.guid);
@@ -350,6 +359,7 @@ function main() {
   }
   console.log(`${written} files written to ${path.relative(ROOT, OUTPUT_DIR)}/`);
   if (deduped) console.log(`${deduped} entries deduplicated (lower binding count for same vendor+product)`);
+  if (ignored) console.log(`${ignored} entries ignored via meta.json`);
   if (skipped) console.log(`${skipped} entries skipped (unparseable or wildcard)`);
   if (collisions.length) {
     console.log(`${collisions.length} filename collisions (kept first):`);
