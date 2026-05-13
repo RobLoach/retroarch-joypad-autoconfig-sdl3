@@ -86,6 +86,18 @@ test('Logitech WingMan: inverted-axis trigger', () => {
   assert.equal(cfg.input_r2_axis, '+2');
 });
 
+test('8BitDo N64: button-backed half-axis (C-buttons as right stick)', () => {
+  // SDL: +rightx:b9, -rightx:b4, +righty:b3, -righty:b8
+  // C-buttons are digital buttons, not axes — map to _btn variants.
+  const cfg = parseCfg('8BitDo N64_03000000c82d00000290000000000000.cfg');
+  assert.equal(cfg.input_r_x_plus_btn, '9');
+  assert.equal(cfg.input_r_x_minus_btn, '4');
+  assert.equal(cfg.input_r_y_plus_btn, '3');
+  assert.equal(cfg.input_r_y_minus_btn, '8');
+  assert.equal(cfg.input_r_x_plus_axis, undefined);
+  assert.equal(cfg.input_r_x_plus_btn_label, 'Right Stick Right');
+});
+
 test('Every emitted button line has a corresponding label line', () => {
   const cfg = parseCfg('8BitDo Pro 2_03000000c82d00000360000000000000.cfg');
   for (const key of Object.keys(cfg)) {

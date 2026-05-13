@@ -86,6 +86,14 @@ const LABELS = {
   input_r_x_minus_axis: 'Right Stick Left',
   input_r_y_plus_axis: 'Right Stick Down',
   input_r_y_minus_axis: 'Right Stick Up',
+  input_l_x_plus_btn: 'Left Stick Right',
+  input_l_x_minus_btn: 'Left Stick Left',
+  input_l_y_plus_btn: 'Left Stick Down',
+  input_l_y_minus_btn: 'Left Stick Up',
+  input_r_x_plus_btn: 'Right Stick Right',
+  input_r_x_minus_btn: 'Right Stick Left',
+  input_r_y_plus_btn: 'Right Stick Down',
+  input_r_y_minus_btn: 'Right Stick Up',
 };
 
 function parseGuid(guid) {
@@ -232,13 +240,19 @@ function buildCfg(entry, unmappedTally, others = []) {
   }
 
   // Half-axis bindings — only emit if the full-axis pair didn't already cover this key.
+  // When the value is a button rather than an axis, emit the _btn variant instead.
   for (const sdlKey of Object.keys(HALF_AXIS_MAP)) {
     const sdlVal = entry.mappings[sdlKey];
     if (sdlVal === undefined) continue;
-    const raKey = HALF_AXIS_MAP[sdlKey];
-    if (writtenKeys.includes(raKey)) continue;
-    const v = valueToHalfAxis(sdlVal);
-    if (v !== null) writeKV(raKey, v);
+    const raAxisKey = HALF_AXIS_MAP[sdlKey];
+    if (writtenKeys.includes(raAxisKey)) continue;
+    const axisVal = valueToHalfAxis(sdlVal);
+    if (axisVal !== null) {
+      writeKV(raAxisKey, axisVal);
+      continue;
+    }
+    const btnVal = valueToButton(sdlVal);
+    if (btnVal !== null) writeKV(raAxisKey.replace(/_axis$/, '_btn'), btnVal);
   }
 
   const labelLines = [];
@@ -254,7 +268,10 @@ function buildCfg(entry, unmappedTally, others = []) {
   for (const sdlKey of Object.keys(entry.mappings)) {
     if (sdlKey === 'crc') continue;
     if (KEY_MAP[sdlKey]) continue;
-    if (HALF_AXIS_MAP[sdlKey] && writtenKeys.includes(HALF_AXIS_MAP[sdlKey])) continue;
+    if (HALF_AXIS_MAP[sdlKey]) {
+      const raAxisKey = HALF_AXIS_MAP[sdlKey];
+      if (writtenKeys.includes(raAxisKey) || writtenKeys.includes(raAxisKey.replace(/_axis$/, '_btn'))) continue;
+    }
     unmapped.push(`${sdlKey}=${entry.mappings[sdlKey]}`);
     if (unmappedTally) {
       const bucket = NO_RETROARCH_EQUIVALENT.has(sdlKey)
